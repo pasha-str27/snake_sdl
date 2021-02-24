@@ -15,6 +15,7 @@ public:
 	texture& get_snake_head();
 	void change_positions();
 	void add_new_body_part();
+	void reset();
 	~Snake();
 };
 

@@ -22,9 +22,8 @@ void Snake::change_positions()
         return;
 
     for (int i = body_parts.size() - 1; i>=1 ; --i)
-    {
         body_parts[i] = body_parts[i-1];
-    }
+    
     body_parts[0] = { head.get_position_x(),head.get_position_y() ,44,44};
 }
 
@@ -33,7 +32,13 @@ void Snake::add_new_body_part()
     body_parts.push_back({ head.get_position_x(),head.get_position_y(),block_size,block_size });
 }
 
+void Snake::reset()
+{
+    body_parts.clear();
+}
+
 Snake::~Snake()
 {
     head.free();
+    body_parts.clear();
 }

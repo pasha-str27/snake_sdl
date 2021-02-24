@@ -32,14 +32,20 @@ int main(int arc, char** argv)
 	int current_score = 0;
 
 	texture score;//текстура гравц¤
-	
+	texture game_over;
 
 	texture best_score;//текстура гравц¤
 	best_score.load_from_text("Best: " + std::to_string(get_best_result()), text_font, main_renderer, text_color);
-
+	score.load_from_text("Score: " + std::to_string(0), text_font, main_renderer, text_color);
+	TTF_CloseFont(text_font);
+	text_font= TTF_OpenFont("fonts/18545.ttf", 160);
+	game_over.load_from_text("Game over!", text_font, main_renderer, text_color);
+	TTF_CloseFont(text_font);
+	text_font = TTF_OpenFont("fonts/18545.ttf", 60);
 	SDL_Rect background_rect = { 20,100,screen_width-40,screen_height-120 };
-
-
+	texture tip;
+	tip.load_from_text("press SPACE to start new game", text_font, main_renderer, text_color);
+	bool is_finished_game = false;
 
 	int step = 44;
 	int width = (background_rect.w - background_rect.x) / step;
@@ -50,7 +56,7 @@ int main(int arc, char** argv)
 
 	//позиц≥¤ зображенн¤ куди маЇ рухатис¤ зображенн¤
 	int new_hero_pos_x = screen_width / 2 + (screen_width / 2) % step;
-	int new_hero_pos_y = screen_height / 2 + (screen_height / 2) % step;;
+	int new_hero_pos_y = screen_height / 2 + (screen_height / 2) % step;
 
 	float angle = 0;
 
@@ -62,6 +68,7 @@ int main(int arc, char** argv)
 	std::vector<SDL_Rect> taken_pos;
 
 	SDL_Rect player_pos = { new_hero_pos_x ,new_hero_pos_y , step ,step };
+	SDL_Rect next_player_pos = { new_hero_pos_x+step,new_hero_pos_y,step,step };
 
 	taken_pos.push_back(player_pos);
 
@@ -70,15 +77,17 @@ int main(int arc, char** argv)
 	detect_collisions controll_collisions;
 
 	//крок на поточному кадр≥ 
-	float step_x = step;
-	float step_y = 0;
+	int step_x = step;
+	int step_y = 0;
 
+	int scree_freequency = 800;
 
 	int frame_count = 0;
+	
+	bool collected_coin = false;
 
 	SDL_Rect temp = { background_rect.x+20,background_rect.y+20,background_rect.w - 40,background_rect.h-40 };
 
-	bool collected_coin = false;
 
 	//доки не закриЇмо програму
 	SDL_Event events;
@@ -97,8 +106,26 @@ int main(int arc, char** argv)
 			//¤кщо натиснуто кнопку, зм≥нюЇмо крок руху геро¤ залежно в≥д натиснутоњ кнопки
 			if ((events.type == SDL_KEYDOWN || events.type == SDL_KEYUP) && events.key.repeat == 0)
 			{
+				if (is_finished_game&& events.key.keysym.sym== SDLK_SPACE)
+				{
+					save_result(current_score);
+					current_score = 0;
+					snake.reset();
+					score.load_from_text("Score: " + std::to_string(current_score), text_font, main_renderer, text_color);
+					best_score.load_from_text("Best: " + std::to_string(get_best_result()), text_font, main_renderer, text_color);
+					new_hero_pos_x = screen_width / 2 + (screen_width / 2) % step;
+					new_hero_pos_y = screen_height / 2 + (screen_height / 2) % step;
+					scree_freequency = 800;
+					frame_count = 0;
+					is_finished_game = false;
+					taken_pos.clear();
+					taken_pos.push_back(player_pos);
+					break;
+				}
+
 				switch (events.key.keysym.sym)
 				{
+
 				case SDLK_UP://рух вгору
 					if (angle == 90)
 						break;
@@ -133,8 +160,6 @@ int main(int arc, char** argv)
 			}
 		}
 
-
-
 		++frame_count;
 
 		//виводимо на екран текстури доки не вийдемо з програми
@@ -142,57 +167,73 @@ int main(int arc, char** argv)
 		SDL_RenderClear(main_renderer);
 
 		//¤кщо текстура гравц¤ не виходить за меж≥ екрана, зм≥нюЇмо позиц≥ю текструри
-		if (frame_count % (step * 20) == 0)
+		if (frame_count == scree_freequency && !is_finished_game &&
+			(new_hero_pos_x + step_x >= background_rect.x && new_hero_pos_x + step_x + step <= background_rect.w &&
+				new_hero_pos_y + step_y >= background_rect.y && new_hero_pos_y + step_y - step <= background_rect.h))
 		{
-			if (new_hero_pos_x + step_x >= background_rect.x && new_hero_pos_x + step_x+step <= background_rect.w)
-				new_hero_pos_x += step_x;
-
-			if (new_hero_pos_y + step_y >= background_rect.y && new_hero_pos_y + step_y-step <= background_rect.h)
-				new_hero_pos_y += step_y;
+			new_hero_pos_x += step_x;
+			new_hero_pos_y += step_y;
 		}
-
+		else
+			if(frame_count == scree_freequency)
+				is_finished_game = true;
 
 
 		background.render(main_renderer, 10, 100, NULL, &temp);
-		
-
 
 		block.render(main_renderer, block_pos.x, block_pos.y, NULL, &block_pos);
 
 
-		//std::cout << snake.get_positions_boby_parts().size() << "\n";
 		for (SDL_Rect a : snake.get_positions_boby_parts())
-		{
-			//std::cout << a.x << "\t" << a.y << "\n";
 			block.render(main_renderer, a.x, a.y, NULL, &a);
-		}
-		//std::cout << "\n";
-		if (frame_count == step * 20)
+
+		if (!is_finished_game &&frame_count == scree_freequency)
 		{
 			frame_count = 0;
-			//if (!collected_coin)
-				snake.change_positions();
+			snake.change_positions();
+			taken_pos.clear();
+			taken_pos.push_back(player_pos);
+			for(SDL_Rect rect:snake.get_positions_boby_parts())
+				taken_pos.push_back(rect);
 			collected_coin = false;
 		}
 
-
 		player_pos = { new_hero_pos_x ,new_hero_pos_y , step ,step };
-		snake.get_snake_head().render(main_renderer, new_hero_pos_x, new_hero_pos_y,NULL, &player_pos,angle);
+
+
+		snake.get_snake_head().render(main_renderer, new_hero_pos_x, new_hero_pos_y, NULL, &player_pos, angle);
 		if (controll_collisions.collision_with_block(block_pos, player_pos))
 		{
+			scree_freequency -= 5;
 			++current_score;
-			block_pos = blocks_gen.generate_new_position(background_rect, step, width, height, taken_pos);
-			snake.add_new_body_part();
 			collected_coin = true;
+			block_pos = blocks_gen.generate_new_position(background_rect, step, width, height, taken_pos);
+			score.load_from_text("Score: " + std::to_string(current_score), text_font, main_renderer, text_color);
+			snake.add_new_body_part();
+		}
+
+		best_score.render(main_renderer, 20, 20);
+
+		score.render(main_renderer, screen_width / 2 + 430, 20);
+
+		if (!collected_coin)
+		{
+			for (SDL_Rect rect : snake.get_positions_boby_parts())
+			{
+				if (controll_collisions.collision_with_block(rect, player_pos))
+				{
+					is_finished_game = true;
+					break;
+				}
+			}
 		}
 
 
-
-		best_score.render(main_renderer, 20, 20);
-		score.load_from_text("Score: " + std::to_string(current_score), text_font, main_renderer, text_color);
-		score.render(main_renderer, screen_width/2+430, 20);
-
-
+		if (is_finished_game)
+		{
+			game_over.render(main_renderer, screen_width / 2-450, screen_height / 2-200);
+			tip.render(main_renderer, screen_width / 2 - 450, screen_height / 2 + 300);
+		}
 
 
 		SDL_RenderPresent(main_renderer);

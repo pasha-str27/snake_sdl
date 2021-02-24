@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 
+//deteckting colisions with blocks
 class detect_collisions
 {
 public:

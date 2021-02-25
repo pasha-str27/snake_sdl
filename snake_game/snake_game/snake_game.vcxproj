@@ -148,6 +148,8 @@
   <ItemGroup>
     <ClCompile Include="blocks_generator.cpp" />
     <ClCompile Include="detect_collisions.cpp" />
+    <ClCompile Include="game_manager.cpp" />
+    <ClCompile Include="score_file_controller.cpp" />
     <ClCompile Include="Snake.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="texture.cpp" />
@@ -155,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="blocks_generator.h" />
     <ClInclude Include="detect_collisions.h" />
+    <ClInclude Include="game_manager.h" />
     <ClInclude Include="score_file_controller.h" />
     <ClInclude Include="Snake.h" />
     <ClInclude Include="texture.h" />

@@ -5,6 +5,8 @@ texture::texture()
 	texture_ = NULL;
 	width = 0;
 	height = 0;
+	pos_x = 0;
+	pos_y = 0;
 }
 
 //loading texture from file

@@ -1,6 +1,6 @@
 #include "Snake.h"
 
-Snake::Snake(SDL_Renderer * main_renderer,int block_size)
+void Snake::init(SDL_Renderer * main_renderer,int block_size)
 {
     head.load_from_file("images/head.png", main_renderer);//load image
     this->block_size = block_size;
@@ -23,8 +23,8 @@ void Snake::change_positions()
     if (body_parts.size() == 0)
         return;
 
-    for (int i = body_parts.size() - 1; i>=1 ; --i)
-        body_parts[i] = body_parts[i-1];
+    for (size_t i = body_parts.size() - 1; i>=1 ; --i)
+        body_parts[i] = body_parts.at(i-1);
     
     body_parts[0] = { head.get_position_x(),head.get_position_y() ,44,44};
 }
@@ -47,3 +47,23 @@ Snake::~Snake()
     head.free();//remove head
     body_parts.clear();//remove all body parts
 }
+
+//void Snake::set_step_x(int x)
+//{
+//    step_x = x;
+//}
+//
+//void Snake::set_step_y(int y)
+//{
+//    step_y = y;
+//}
+//
+//int Snake::get_step_y()
+//{
+//    return step_y;
+//}
+//
+//int Snake::get_step_x()
+//{
+//    return step_x;
+//}
